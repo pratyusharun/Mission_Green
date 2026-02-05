@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Three.js Cinematic Space Scene</title>
+
+  <style>
+    :root {
+      --green: #2ecc71;
+      --green-soft: rgba(46, 204, 113, 0.25);
+      --green-glow: rgba(46, 204, 113, 0.6);
+
+      /* Glass */
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.18);
+
+      /* Panel */
+      --panel-bg: rgba(0, 0, 0, 0.68);
+    }
+
+    /* ───────── GLOBAL ───────── */
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+      font-family: "Inter", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ───────── DONATE BUTTON ───────── */
+    #donateContainer {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+    }
+
+    #donateBtn {
+      width: 160px;
+      height: 48px;
+      background: var(--glass-bg);
+      border: 1.5px solid var(--glass-border);
+      color: var(--green);
+      font-size: 15px;
+      letter-spacing: 1.2px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 10px;
+      outline: none;
+      position: relative;
+      overflow: hidden;
+
+      /* Glass effect */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+
+      /* Green glow */
+      box-shadow:
+        0 0 10px rgba(46, 204, 113, 0.35),
+        0 0 22px rgba(46, 204, 113, 0.25);
+
+      transition:
+        width 0.45s cubic-bezier(.4, 0, .2, 1),
+        border-radius 0.45s cubic-bezier(.4, 0, .2, 1),
+        background 0.35s ease,
+        color 0.35s ease,
+        box-shadow 0.35s ease,
+        transform 0.15s ease;
+    }
+
+    #donateBtn .label {
+      position: relative;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Hover → filled, still glassy */
+    #donateBtn:hover {
+      width: 320px;
+      border-radius: 26px;
+      background: rgba(46, 204, 113, 0.85);
+      color: #000;
+
+      box-shadow:
+        0 0 18px rgba(46, 204, 113, 0.9),
+        0 0 40px rgba(46, 204, 113, 0.7),
+        0 0 70px rgba(46, 204, 113, 0.45);
+    }
+
+    /* Press */
+    #donateBtn:active {
+      transform: scale(0.96);
+    }
+
+    #donateContainer {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+    }
+
+    #donateBtn {
+      width: 160px;
+      height: 48px;
+      background: var(--glass-bg);
+      border: 1.5px solid var(--glass-border);
+      color: var(--green);
+      font-size: 15px;
+      letter-spacing: 1.2px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 10px;
+      outline: none;
+      position: relative;
+      overflow: hidden;
+
+      /* Glass effect */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+
+      /* Green glow */
+      box-shadow:
+        0 0 10px rgba(46, 204, 113, 0.35),
+        0 0 22px rgba(46, 204, 113, 0.25);
+
+      transition:
+        width 0.45s cubic-bezier(.4, 0, .2, 1),
+        border-radius 0.45s cubic-bezier(.4, 0, .2, 1),
+        background 0.35s ease,
+        color 0.35s ease,
+        box-shadow 0.35s ease,
+        transform 0.15s ease;
+    }
+
+    #donateBtn .label {
+      position: relative;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Hover → filled, still glassy */
+    #donateBtn:hover {
+      width: 320px;
+      border-radius: 26px;
+      background: rgba(46, 204, 113, 0.85);
+      color: #000;
+
+      box-shadow:
+        0 0 18px rgba(46, 204, 113, 0.9),
+        0 0 40px rgba(46, 204, 113, 0.7),
+        0 0 70px rgba(46, 204, 113, 0.45);
+    }
+
+    /* Press */
+    #donateBtn:active {
+      transform: scale(0.96);
+    }
+
+    /* ───────── TOP NAV PANEL ───────── */
+    #topNav {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      padding: 12px 18px;
+
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+
+      box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.65),
+        0 0 0 1px rgba(255, 255, 255, 0.03);
+
+      z-index: 30;
+    }
+
+    /* Nav buttons */
+    .navBtn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: rgba(255, 255, 255, 0.92);
+      padding: 8px 16px;
+      font-size: 13.5px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+
+      transition:
+        background 0.25s ease,
+        color 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.15s ease;
+    }
+
+    /* Hover */
+    .navBtn:hover {
+      background: rgba(46, 204, 113, 0.2);
+      border-color: var(--green);
+      color: var(--green);
+
+      box-shadow:
+        0 0 14px rgba(46, 204, 113, 0.5);
+
+      transform: translateY(-1px);
+    }
+
+    /* Active */
+    .navBtn.active {
+      background: rgba(46, 204, 113, 0.35);
+      border-color: var(--green);
+      color: var(--green);
+
+      box-shadow:
+        0 0 20px rgba(46, 204, 113, 0.7);
+
+      cursor: default;
+    }
+
+    /* ───────── GLASS OVERLAY ───────── */
+    #infoOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+
+      display: flex;
+      justify-content: flex-end;
+      align-items: stretch;
+
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 50;
+    }
+
+    #infoOverlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ───────── GLASS PANEL ───────── */
+    #infoPanel {
+      position: relative;
+      width: 380px;
+      height: 100%;
+      padding: 64px 28px 32px;
+
+      background: linear-gradient(180deg,
+          rgba(255, 255, 255, 0.12),
+          rgba(255, 255, 255, 0.04));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+
+      border-left: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow:
+        -30px 0 60px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+      transform: translateX(100%);
+      transition: transform 0.45s cubic-bezier(.4, 0, .2, 1);
+
+      color: #ffffff;
+    }
+
+    #infoOverlay.active #infoPanel {
+      transform: translateX(0);
+    }
+
+    /* ───────── CLOSE BUTTON ───────── */
+    #closePanel {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+
+      transition:
+        background 0.25s ease,
+        transform 0.15s ease,
+        box-shadow 0.25s ease;
+    }
+
+    #closePanel:hover {
+      background: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
+    }
+
+    #closePanel:active {
+      transform: scale(0.9);
+    }
+
+    /* ───────── PANEL TEXT ───────── */
+    #infoPanel h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+      color: #2ecc71;
+    }
+
+    #infoPanel p {
+      margin-top: 14px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    /* ───────── LOGO (GLASS) ───────── */
+    #logoContainer {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+
+      padding: 10px 14px;
+      border-radius: 14px;
+
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+
+      border: 1px solid rgba(255, 255, 255, 0.18);
+
+      box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+      z-index: 40;
+    }
+
+    #logoContainer img {
+      height: 56px;
+      /* adjust if needed */
+      width: auto;
+      display: block;
+      pointer-events: none;
+    }
+  </style>
+
+  <!-- IMPORT MAP -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+
+<div id="logoContainer">
+  <img src="logo_tra.png" alt="Logo" />
+</div>
+
+<body>
+  <div id="topNav">
+    <button class="navBtn active">Home</button>
+    <button class="navBtn" id="obj_b">Our Objective</button>
+    <button class="navBtn" id="tes_b">Testimony</button>
+    <button class="navBtn" id="abt_b">About Us</button>
+  </div>
+
+  <div id="donateContainer">
+    <button id="donateBtn">
+      <span class="label">Donate</span>
+    </button>
+  </div>
+
+  <!-- Glass Info Panel -->
+  <div id="infoOverlay">
+    <div id="infoPanel">
+      <button id="closePanel">×</button>
+
+      <h2 id="panelTitle">Our Objective</h2>
+      <p id="panelContent">
+        Our mission is to support sustainable growth by encouraging community
+        participation. Each donation helps grow the virtual world and represents
+        real impact toward a greener future.
+      </p>
+
+    </div>
+  </div>
+
+
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+    import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+    import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+    import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+
+    const infoOverlay = document.getElementById("infoOverlay");
+    const closePanel = document.getElementById("closePanel");
+    const panelTitle = document.getElementById("panelTitle");
+    const panelContent = document.getElementById("panelContent");
+
+    // Content map
+    const panelData = {
+      objective: {
+        title: "Our Objective",
+        text: `
+      Our mission is to support sustainable growth by encouraging community
+      participation. Each donation helps grow the virtual world and represents
+      real impact toward a greener future.  Our Mission
+
+We envision a Charkop where:
+
+Streets and parks are lush with native trees.
+
+Every household practices recycling and composting.
+
+Children grow up inspired to protect the environment.
+
+Community spirit grows alongside green spaces.
+
+Our Values
+
+🌼 Action-driven — small steps, real results
+🤝 Community first — people and planet together
+🌱 Education & empowerment — knowledge that leads to change
+🌍 Sustainability for life — today and tomorrow
+    `
+      },
+      testimony: {
+        title: "Testimony",
+        text: `
+“Joining Mission Green Mumbai in Charkop has been life-changing. Within months, our local park went from barren dirt to a vibrant green space. The sense of community and pride we feel is incredible. It’s amazing how a few people with passion can inspire an entire neighborhood.”
+— Rhea Sharma, Charkop Resident
+
+—————————————————————————
+
+“The workshops on organic farming and water conservation opened my eyes. I now manage my household waste responsibly, grow vegetables at home, and teach my neighbors what I learned. Mission Green Mumbai didn’t just change the environment — it changed mindsets.”
+— Sunita Kulkarni, Home Gardener
+`
+      },
+      about: {
+        title: "About Us",
+        text: `
+      Mission Green Mumbai — Charkop Branch is a grassroots community initiative dedicated to revitalizing the local environment and inspiring sustainable living in one of Mumbai’s most vibrant neighborhoods. Founded with a shared vision of combining community energy with ecological action, we strive to turn Charkop into a model for urban greening and environmental awareness.
+
+At our core, we believe that every small action creates big change. Trees planted, waste reduced, and clean spaces created don’t just beautify our surroundings — they reconnect us with nature, our neighbors, and our shared responsibility toward future generations.
+
+What We Do
+
+🌿 Tree Plantation Drives
+Organized quarterly, involving residents, schools, and local businesses to expand green cover in parks, sidewalks, and community spaces.
+
+🍃 Environmental Workshops
+Hands-on training in composting, rainwater harvesting, organic gardening, and sustainable household practices.
+
+🌎 Clean-Up Campaigns
+Regular clean initiatives in streets, playgrounds, and open areas, encouraging responsible waste management.
+
+👥 Community Engagement
+We host eco-talks, children’s activities, and neighborhood challenges to make sustainability fun and inclusive.
+
+💧 Water & Waste Conservation
+From rainwater harvesting awareness to household waste segregation programs, we empower locals to reduce their environmental footprint.
+    `
+      }
+    };
+
+    // Open panel with content
+    function openPanel(type) {
+      panelTitle.textContent = panelData[type].title;
+      panelContent.textContent = panelData[type].text;
+      infoOverlay.classList.add("active");
+    }
+
+    // Button bindings
+    document.getElementById("obj_b").addEventListener("click", () => openPanel("objective"));
+    document.getElementById("tes_b").addEventListener("click", () => openPanel("testimony"));
+    document.getElementById("abt_b").addEventListener("click", () => openPanel("about"));
+
+    // Close panel
+    closePanel.addEventListener("click", () => {
+      infoOverlay.classList.remove("active");
+    });
+
+    // Click outside to close
+    infoOverlay.addEventListener("click", (e) => {
+      if (e.target === infoOverlay) {
+        infoOverlay.classList.remove("active");
+      }
+    });
+
+
+    let mixer;
+    const clock = new THREE.Clock();
+
+    // ───────── SCENE ─────────
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    // ───────── CAMERA ─────────
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    camera.position.set(3, 10, 20);
+
+    // ───────── RENDERER ─────────
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.4;
+    renderer.physicallyCorrectLights = true;
+    document.body.appendChild(renderer.domElement);
+
+    // ───────── POST PROCESSING (BLOOM) ─────────
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      0.9,
+      0.5,
+      0.85
+    );
+    composer.addPass(bloomPass);
+
+    // ───────── LIGHTING ─────────
+    scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+
+    const keyLight = new THREE.DirectionalLight(0x88aaff, 2.2);
+    keyLight.position.set(5, 6, 5);
+    scene.add(keyLight);
+
+    const fillLight = new THREE.PointLight(0x334466, 1.2);
+    fillLight.position.set(-4, 2, 3);
+    scene.add(fillLight);
+
+    const rimLight = new THREE.DirectionalLight(0x6699ff, 1.5);
+    rimLight.position.set(-5, 3, -5);
+    scene.add(rimLight);
+
+    // ───────── CONTROLS ─────────
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    // ───────── STAR PARTICLES ─────────
+    const starCount = 2000;
+    const starGeometry = new THREE.BufferGeometry();
+    const starPositions = [];
+
+    for (let i = 0; i < starCount; i++) {
+      starPositions.push(
+        (Math.random() - 0.5) * 300,
+        (Math.random() - 0.5) * 300,
+        (Math.random() - 0.5) * 300
+      );
+    }
+
+    starGeometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(starPositions, 3)
+    );
+
+    const stars = new THREE.Points(
+      starGeometry,
+      new THREE.PointsMaterial({ color: 0xffffff, size: 0.6 })
+    );
+    scene.add(stars);
+
+    // ───────── TREE STAGES ─────────
+    let treeStage1, treeStage2, treeStage3;
+    let stageIndex = 0;
+
+    // ───────── LOAD GLB ─────────
+    const loader = new GLTFLoader();
+    loader.load("3d model_2.glb", (gltf) => {
+      const model = gltf.scene;
+      scene.add(model);
+
+      treeStage1 = model.getObjectByName("tree_stage_1");
+      treeStage2 = model.getObjectByName("tree_stage_2");
+      treeStage3 = model.getObjectByName("tree_stage_3");
+
+      if (!treeStage1 || !treeStage2 || !treeStage3) {
+        console.error("Tree stages not found. Check object names.");
+        return;
+      }
+
+      treeStage1.visible = true;
+      treeStage2.visible = false;
+      treeStage3.visible = false;
+
+      model.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material.envMapIntensity = 0;
+          child.material.roughness = Math.min(child.material.roughness ?? 0.5, 0.8);
+          child.material.metalness = Math.min(child.material.metalness ?? 0.5, 0.6);
+          child.material.needsUpdate = true;
+        }
+      });
+
+      mixer = new THREE.AnimationMixer(model);
+      gltf.animations.forEach((clip) => {
+        mixer.clipAction(clip).play();
+      });
+    });
+
+    // ───────── DONATE BUTTON LOGIC ─────────
+    document.getElementById("donateBtn").addEventListener("click", () => {
+      stageIndex++;
+
+      if (stageIndex === 1) {
+        treeStage1.visible = false;
+        treeStage2.visible = true;
+      } else if (stageIndex === 2) {
+        treeStage2.visible = false;
+        treeStage3.visible = true;
+      }
+    });
+
+    // ───────── RESIZE ─────────
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // ───────── ANIMATE ─────────
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = clock.getDelta();
+      if (mixer) mixer.update(delta);
+
+      stars.rotation.y += 0.0001;
+      controls.update();
+      composer.render();
+    }
+    animate();
+
+  </script>
+
+</body>
+
+</html>
